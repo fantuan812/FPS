@@ -1,0 +1,42 @@
+# Unreal Engine generated files
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# IDE and editor state
+.idea/
+.vs/
+.vscode/
+Plugins/Developer/RiderLink/
+*.VC.db
+*.VC.opendb
+*.sdf
+*.suo
+*.opensdf
+*.sln
+*.slnx
+*.code-workspace
+
+# Build products and logs
+*.log
+*.pdb
+*.obj
+*.dll
+*.exe
+*.app
+*.dSYM
+
+# User-specific Unreal files
+*.user
+*.userprefs
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
