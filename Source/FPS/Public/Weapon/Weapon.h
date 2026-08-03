@@ -22,12 +22,11 @@ public:
 	
 	void AttachToOwningPawn() const;
 	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="FPS|WeaponType")
+	FGameplayTag WeaponType;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
-	UPROPERTY(EditAnywhere,Category="FPS|WeaponType")
-	FGameplayTag WeaponType;
 
 private:
 	

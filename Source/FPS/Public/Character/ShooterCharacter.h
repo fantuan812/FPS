@@ -32,10 +32,15 @@ public:
 	virtual USkeletalMeshComponent* GetMesh1P_Implementation() const override;
 	virtual USkeletalMeshComponent* GetMesh3P_Implementation() const override;
 	/** ~PlayerInterface */
-protected:
-	// Called when the game starts or when spawned
+	
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
+	
+protected:
+	// Called when the game starts or when spawned
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="FPS|Combat")
+	TObjectPtr<UCombatComponent> Combat;
 private:
 	
 	void Input_CycleWeapon();
@@ -48,8 +53,7 @@ private:
 	void Input_Aim_Pressed();
 	void Input_Aim_Released();
 	
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UCombatComponent> Combat;
+	
 	
 	// 1st person view(arm)
 	UPROPERTY(VisibleAnywhere)
