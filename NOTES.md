@@ -39,3 +39,19 @@
 3. **`TransformToBoneSpace`**：把世界空间的位置/旋转转换到指定骨骼的局部（bone space）坐标。FABRIK 节点需要的通常是骨骼空间目标，所以先在 C++ 每帧算好再暴露给动画蓝图，避免在蓝图里做复杂的坐标换算。
 4. **C++ 每帧计算 + BlueprintReadOnly 暴露**：适合动画蓝图需要的、每帧变化的中间数据（如 IK 目标 Transform），把数学留在 C++，蓝图只做读取与接线。
 5. **复制属性读取无需 OnRep（再次印证）**：动画蓝图直接读 `bAiming` / `CurrentWeapon` 的复制值即可；`ReplicatedUsing` 只用于需要在变化瞬间执行逻辑的场景。
+
+## 2026-08-10：Turn-In-Place 原地转身（规划阶段）
+
+### 本次修改内容
+1. `ShooterCharacter` 新增 `HasCurentWeapon()`（BlueprintCallable）：返回是否持有当前武器（`Combat` 与 `Combat->CurrentWeapon` 均有效），供动画蓝图做条件分支（如有武器才播持枪动画）。
+2. `ShooterCharacter` 新增 `CalculateTurnInPlaceParemeters()`，已在 Tick 中每帧调用，目前只有注释形式的逻辑规划（伪代码），尚未实现：
+   - 站立且未跳跃时：算当前瞄准旋转与初始瞄准旋转的差值（AO_Yaw），根据大小进入 Left/Right 转向状态，插值 InterpAO_Yaw 归零。
+   - 移动/跳跃时：重置初始瞄准旋转，AO_Yaw=0，同时计算 Movement Offset Yaw（移动方向与瞄准方向的差）供侧移 BlendSpace 使用。
+
+### 相关知识点
+1. **Turn-In-Place（原地转身）**：角色原地站立、只转动视角时，用脚部原地踏步动画平滑过渡，避免角色"滑冰"。核心数据是 `AO_Yaw`（当前瞄准与初始瞄准的偏航差）。
+2. **Aim Offset（瞄准偏移）**：以"瞄准方向 - 身体朝向"的差值（yaw/pitch）采样 BlendSpace，实现身体不动、仅头部/枪口转向的效果。
+3. **Movement Offset Yaw**：移动方向（速度朝向）与瞄准方向的差值，驱动侧移（Strafe）BlendSpace，是 TIP 与侧移动画共用的数据。
+4. **状态机思想**：TurningStatus（NotTurning / Left / Right）是最小可用的转向状态机，配合阈值（>90°、<-90° 判定转向，<5° 判定归位）。
+5. **伪代码先行**：先把逻辑用注释在函数里规划清楚，再逐步实现，适合复杂动画状态计算（本函数即为该方式的示例）。
+6. **BlueprintCallable 判定函数**：像 `HasCurentWeapon()` 这样的纯查询函数暴露给动画蓝图做分支，比在蓝图中直接访问空指针更安全。

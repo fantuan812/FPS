@@ -83,14 +83,56 @@ FRotator AShooterCharacter::GetFixedAimRotation() const
 	
 }
 
+bool AShooterCharacter::HasCurentWeapon() const
+{
+	return IsValid(Combat)&&Combat->CurrentWeapon !=nullptr;
+}
+
 
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	
+	CalculateTurnInPlaceParemeters();
 	CalculateFABRIKSocketTransform();
 }
+
+void AShooterCharacter::CalculateTurnInPlaceParemeters()
+{
+	//Get Velocity , see if its zero
+	//see if  we are falling
+	
+	
+	//if standing still and not jumping
+		//get current aim rotation
+		//get delta aim rotation- the difference in rotation of my current aim rotation  from the ini9tial aim rotation
+		//(initial aim rotation is caculated in BeginPlay)
+		//Store the Yaw of the delta aim rotation (AO_Yaw)
+		//if TurningStatus == NotTUrning
+			//Set InterpAO_Yaw to AO_Ywa
+		// TurnInPlcae() - interpolates the InterpAO_Yaw value to zero.
+	
+	//if running or jumping
+		// reset initial aim rotation to the current actual aim rotation
+		//AO_Yaw =0
+		//we also need a Movemment Offsedt Yaw to feed to ouir strafing blendspaces
+		// Get Base Aim Rotation
+		// Get OurMovement Rotation - this is the rotation of our Velocity
+		// Movement Offset Yaw = the delta between our movement rotation and our aim rotation
+		// TurningStatus =NotTurning
+}
+//Turn InPLace
+	//if AO_Yaw >90
+		// TurningStatus =Right
+	//else if AO_Yaw <-90
+		// TurningStatus = Left
+	//if TurningStatus != NotTuring (in other wordds, we are turningb left or right)
+		//Interpolate InterpAO_Yaw
+		//if Abs(AO_Yaw) < 5.f
+			//TurningStutus = NotTurning
+			//reset initial aim rotation to our actual aim rotation
 
 void AShooterCharacter::CalculateFABRIKSocketTransform()
 {
@@ -110,6 +152,8 @@ void AShooterCharacter::CalculateFABRIKSocketTransform()
 		FABRIK_SocketTransform.SetRotation(OutRotation.Quaternion());
 	}
 }
+
+
 
 
 // Called to bind functionality to input

@@ -42,6 +42,8 @@ public:
 	UPROPERTY(BlueprintReadOnly,Category="FPS|FABRIK")
 	FTransform FABRIK_SocketTransform;
 	
+	UFUNCTION(BlueprintCallable)
+	bool HasCurentWeapon() const;
 protected:
 	// Called when the game starts or when spawned
 	
@@ -60,7 +62,7 @@ private:
 	void Input_Aim_Released();
 	
 	void CalculateFABRIKSocketTransform();
-	
+	void CalculateTurnInPlaceParemeters();
 	// 1st person view(arm)
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USkeletalMeshComponent> Mesh1P;
