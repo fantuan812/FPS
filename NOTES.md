@@ -24,3 +24,18 @@
 3. **复制条件 COND_SkipOwner**：属性只复制给非拥有者，拥有者用自己的本地值。适合"本地已有即时状态、只需同步给他人"的变量（如瞄准/开火状态），可减少带宽。
 4. **动画蓝图读取复制属性无需 OnRep**：纯数据读取（如 ABP 每帧取 `bAiming`）不需要 `ReplicatedUsing`；只有需要在状态变化时执行逻辑（如换枪挂接）才需要 `ReplicatedUsing` + `OnRep`。
 5. **监听服务器双开测试要点**：每个 PIE 窗口内"本地玩家 0"是不同的角色，非常适合验证此类复制与本地状态错位的问题。
+
+## 2026-08-10：FABRIK 手部 IK + 远程玩家瞄准 Pitch 修正
+
+### 本次修改内容
+1. `ShooterCharacter` 新增 `GetFixedAimRotation()`：包装 `GetBaseAimRotation()`，对非本地控制角色把 Pitch 从 [270,360) 映射回 [-90,0]，供动画蓝图做瞄准姿势/瞄准偏移。
+2. `ShooterCharacter` 新增 `CalculateFABRIKSocketTransform()`（在 Tick 每帧调用）：取当前武器 3P 网格上 `FABRIK_Socket` 的世界坐标，用 `TransformToBoneSpace` 转换到手部骨骼 `hand_r` 的局部空间，存入 `FABRIK_SocketTransform`（BlueprintReadOnly）供动画蓝图 FABRIK 节点使用。
+3. `CombatComponent::CurrentWeapon` 改为 public 且 BlueprintReadOnly，动画蓝图可直接读取 `CurrentWeapon.WeaponType` 按武器类型切换动画。
+4. `ABP_FirstPerson` / `ABP_ThirdPerson` 更新：接入 FABRIK 节点与固定瞄准旋转。
+
+### 相关知识点
+1. **远程玩家 Pitch 复制编码**：`RemoteViewPitch` 用 0~255 压缩编码表示 0~360°。本地玩家 `GetBaseAimRotation().Pitch` 是真实的 -90~0（朝下），而远程玩家复制过来是 270~360。直接用于动画会让远程角色朝下瞄准时旋转错误（朝上/翻转 180°）。修正：把 [270,360) 映射回 [-90,0]。
+2. **FABRIK（逆向运动学）**：UE 提供的一类 IK 解算器节点，可让手臂骨骼末端（手）跟随指定目标，实现"手握住枪把"的效果。目标通常放在武器网格的 socket（如 `FABRIK_Socket`）上。
+3. **`TransformToBoneSpace`**：把世界空间的位置/旋转转换到指定骨骼的局部（bone space）坐标。FABRIK 节点需要的通常是骨骼空间目标，所以先在 C++ 每帧算好再暴露给动画蓝图，避免在蓝图里做复杂的坐标换算。
+4. **C++ 每帧计算 + BlueprintReadOnly 暴露**：适合动画蓝图需要的、每帧变化的中间数据（如 IK 目标 Transform），把数学留在 C++，蓝图只做读取与接线。
+5. **复制属性读取无需 OnRep（再次印证）**：动画蓝图直接读 `bAiming` / `CurrentWeapon` 的复制值即可；`ReplicatedUsing` 只用于需要在变化瞬间执行逻辑的场景。

@@ -36,6 +36,12 @@ public:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 	
+	UFUNCTION(BlueprintCallable)
+	FRotator GetFixedAimRotation() const;
+	
+	UPROPERTY(BlueprintReadOnly,Category="FPS|FABRIK")
+	FTransform FABRIK_SocketTransform;
+	
 protected:
 	// Called when the game starts or when spawned
 	
@@ -53,7 +59,7 @@ private:
 	void Input_Aim_Pressed();
 	void Input_Aim_Released();
 	
-	
+	void CalculateFABRIKSocketTransform();
 	
 	// 1st person view(arm)
 	UPROPERTY(VisibleAnywhere)
